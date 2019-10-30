@@ -1,9 +1,9 @@
-Rapport : fichier csv analyseSeuilOpti -- 
-Meilleur résultat avec seuil 0.30
+Rapport : Rapport_Ensemble_Deep2.pdf
+Meilleur résultat avec seuil 0.31
 gain : 10 160 500
---+ 316 500
+--+ 319 000
 
-Rapport : fichier csv analyse1 --
+Rapport : ensemble sans seuil opti
 résultat : 9 844 000
 
 Analyse générée avec le script pand.py
@@ -15,7 +15,7 @@ Pour générer une analyse avec seuil opti =
 python pand.py pand seuil target pred --file pred_bigml.csv --extract analyseSeuill.csv
 
 Ensuite, on peut appliquer et générer un fichier erreurmajeur depuis
-le menu dynamique selection 1 et l exporté dans un csv appart.
+le menu dynamique selection 1 et l'exporter dans un csv appart.
 
 D'autres options sont disponibles dans le script pour les cas de regréssion par exemple, étudié le script et les args. pour comprendre comment les éxécuter.
 
