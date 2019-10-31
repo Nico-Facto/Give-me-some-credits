@@ -1,6 +1,6 @@
 Rapport : Rapport_Ensemble_Deep2.pdf
 Meilleur résultat avec seuil 0.31
-gain : 10 160 500
+gain : 10 163 000
 --+ 319 000
 
 Rapport : ensemble sans seuil opti
