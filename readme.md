@@ -2,10 +2,11 @@ Rapport : Rapport_Ensemble_Deep2.pdf
 Meilleur résultat avec seuil 0.31
 gain : 10 160 500
 --+ 319 000
--------------------------------------
+
 Rapport : ensemble sans seuil opti
 résultat : 9 844 000
--------------------------------------
+
+
 Analyse générée avec le script pand.py
 
 Pour générer une analyse =
