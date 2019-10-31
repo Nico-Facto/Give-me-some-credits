@@ -5,7 +5,7 @@ gain : 10 160 500
 
 Rapport : ensemble sans seuil opti
 résultat : 9 844 000
-
+-------------------------------------
 Analyse générée avec le script pand.py
 
 Pour générer une analyse =
