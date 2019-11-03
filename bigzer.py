@@ -8,6 +8,7 @@ from graph import rViz ###### importer le script graph.py #########
 
 api = BigML('NICOFACTO', 'f1c450758df16e375da99c36e7094fb901644232', project='project/5d94a4095a213962af00009a')
 
+###### Comparaison AUC/Ammont of data entre 2 models #########
 def compar2model(load_set_train,load_set_test,model_One,model_two):
     ###### variable d'environement #########
     var = 0.1
@@ -49,8 +50,8 @@ def compar2model(load_set_train,load_set_test,model_One,model_two):
     rViz.extraction()        
         
 def summuary(model_One,var_mod) : 
-    ###### Fonctionne que pour ensemble --Methode publié sur discord par Christophe #########
-    model = api.get_ensemble(f"{model_One}")
+    ###### Methode publié sur discord par Christophe #########
+    model = getModel(model_One,var_mod)
     importances = model['object']['importance']
 
     importances_named = dict()
@@ -63,7 +64,7 @@ def summuary(model_One,var_mod) :
     plt.draw()
     plt.show()
 
-def modelOperate(mod,train_dataset) :
+def modelOperate(model_One,train_dataset) :
     if mod == 'ensemble':
         modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "test_auc_curve"}) 
     elif mod == 'model':
@@ -76,6 +77,19 @@ def modelOperate(mod,train_dataset) :
         print("mod non pris en charge ! programme terminé !!")
     return modvar    
 
+def getModel(model_One,var_mod) :
+    if var_mod == 'ensemble':
+        setmod = api.get_ensemble(f"{model_One}") 
+    elif var_mod == 'model':
+        setmod = api.get_model(f"{model_One}")
+    elif var_mod == 'deepnet': 
+        setmod = api.get_deepnet(f"{model_One}") 
+    elif var_mod == 'linear': 
+        setmod = api.get_linear_regression(f"{model_One}")      
+    else :
+        print("mod non pris en charge ! programme terminé !!")
+    return setmod  
+
 def voidUpdate():
     ###### gestion du script #########
     option_choisie = 0
@@ -86,7 +100,7 @@ def voidUpdate():
 
                             Choisissez une option:
 
-        \t1:  Auc/ammount Data           \t2: Summary Report (ensemble)
+        \t1:  Auc/ammount Data           \t2: Summary Report
 
                             \t5: Terminer      
 
