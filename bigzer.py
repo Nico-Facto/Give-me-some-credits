@@ -64,7 +64,7 @@ def summuary(model_One,var_mod) :
     plt.draw()
     plt.show()
 
-def modelOperate(model_One,train_dataset) :
+def modelOperate(mod,train_dataset) :
     if mod == 'ensemble':
         modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "test_auc_curve"}) 
     elif mod == 'model':
@@ -75,6 +75,7 @@ def modelOperate(model_One,train_dataset) :
         modvar = api.create_linear_regression(train_dataset, {"objective_field": "target","name": "test_auc_curve"})      
     else :
         print("mod non pris en charge ! programme terminé !!")
+        exit()
     return modvar    
 
 def getModel(model_One,var_mod) :
@@ -88,6 +89,7 @@ def getModel(model_One,var_mod) :
         setmod = api.get_linear_regression(f"{model_One}")      
     else :
         print("mod non pris en charge ! programme terminé !!")
+        exit()
     return setmod  
 
 def voidUpdate():

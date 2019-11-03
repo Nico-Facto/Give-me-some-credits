@@ -36,12 +36,12 @@ if option_choisie == 1:
 elif option_choisie == 2:
     createSet = False
 
-
-
-
-mod = str(input("Model selectioné : "))
-objectifField = str(input("Nom du champs objectif : "))
-batchForKaggle = bool(input("Mode full test True or False ? ")) #faire entrée sans rien pour False
+elif option_choisie !=3:
+    createSet = False
+    mod = str(input("Model selectioné : "))
+    objectifField = str(input("Nom du champs objectif : "))
+    batchForKaggle = bool(input("Mode full test True or False ? ")) #faire entrée sans rien pour False
+    export = str(input("Nom du fichier exporté : "))
 
 
 if batchForKaggle :
@@ -49,7 +49,6 @@ if batchForKaggle :
 else :
     fileTest = ("NULL")
     
-export = str(input("Nom du fichier exporté : "))
 
 
 api = BigML('NICOFACTO', 'f1c450758df16e375da99c36e7094fb901644232', project='project/5d94a4095a213962af00009a')
@@ -58,32 +57,33 @@ api = BigML('NICOFACTO', 'f1c450758df16e375da99c36e7094fb901644232', project='pr
 
 print("programme initialisé")
 
-if createSet :
-    source = api.create_source(file)
-    origin_dataset = api.create_dataset(source)
-    train_dataset = api.create_dataset(origin_dataset, {"name": "VarTraining", "sample_rate": splitTrain})
-    test_dataset = api.create_dataset(origin_dataset, {"name": "VarTest", "sample_rate": splitTest})
-    file = train_dataset
-    fileTest = test_dataset
-    print("split ok")
+if option_choisie !=3 :
+    if createSet :
+        source = api.create_source(file)
+        origin_dataset = api.create_dataset(source)
+        train_dataset = api.create_dataset(origin_dataset, {"name": "VarTraining", "sample_rate": splitTrain})
+        test_dataset = api.create_dataset(origin_dataset, {"name": "VarTest", "sample_rate": splitTest})
+        file = train_dataset
+        fileTest = test_dataset
+        print("split ok")
 
-    ##################### Meth pour split les full test en dev test et test_test(genre kaggle) ##############################
+        ##################### Meth pour split les full test en dev test et test_test(genre kaggle) ##############################
 
-    # test_full = api.create_dataset(origin_dataset, {"name": "test_full"})
-    # rest = 1-splitTrain
-    # sep= rest/2
-    # print("reste pour test : ",sep)
-    # test_test = api.create_dataset(test_full, {"name": "dev_test", "sample_rate": sep})
-    # test_test = api.create_dataset(test_full, {"name": "test_final", "sample_rate": sep}) 
-                
-else :
-    train_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
-    test_dataset = api.get_dataset("dataset/5db6c8e47811dd0557001103")
-    file = train_dataset
-    fileTest = test_dataset
-    splitTrain = 0.8
-    splitTest = 0.2
-    print("dataset load ok") 
+        # test_full = api.create_dataset(origin_dataset, {"name": "test_full"})
+        # rest = 1-splitTrain
+        # sep= rest/2
+        # print("reste pour test : ",sep)
+        # test_test = api.create_dataset(test_full, {"name": "dev_test", "sample_rate": sep})
+        # test_test = api.create_dataset(test_full, {"name": "test_final", "sample_rate": sep}) 
+                    
+    else :
+        train_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
+        test_dataset = api.get_dataset("dataset/5db6c8e47811dd0557001103")
+        file = train_dataset
+        fileTest = test_dataset
+        splitTrain = 0.8
+        splitTest = 0.2
+        print("dataset load ok") 
 
 ################ Prediction sur fichier train/validation ###################  
 
@@ -150,97 +150,10 @@ def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
     print("prediction ok")
     
 ################ Code libre #######################
+    
+def codelibre() : 
+    print("None")
 
-def codelibre():
-
-    var = 0.1
-
-    tablex = []
-    tabley = []
-
-    for i in range(0,10):
-        print("Step : ",i)
-        origin_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
-        train_dataset = api.create_dataset(origin_dataset, {"name": "AmountData", "sample_rate": var})
-        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "test_auc_curve"})
-
-        fileTest = api.get_dataset("dataset/5db6c8e47811dd0557001103")
-
-        evaluation = api.create_evaluation(modvar,fileTest)
-        api.ok(evaluation)
-        auc = evaluation['object']['result']['model']['average_area_under_roc_curve']
-        print("auc : ", auc, "avec un split : ", var)
-
-        tablex.append(var)
-        tabley.append(auc)
-
-        var += 0.1
-        var = round(var,2)
-
-    print("first step done !!")
-
-    var = 0.1
-    tabley2 = []
-
-    for i in range(0,10):  
-        print("Step : ",i)
-
-        origin_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
-        train_dataset = api.create_dataset(origin_dataset, {"name": "AmountData", "sample_rate": var})
-        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "test_auc_curve"})
-
-        fileTest = api.get_dataset("dataset/5db6c8e47811dd0557001103")
-
-        evaluation = api.create_evaluation(modvar,fileTest)
-        api.ok(evaluation)
-        auc = evaluation['object']['result']['model']['average_area_under_roc_curve']
-        print("auc : ", auc, "avec un split : ", var)
-
-        tabley2.append(auc)
-
-        var += 0.1
-        var = round(var,2)    
-
-    print("Sec step done !!")
-
-    plt.plot(tablex,tabley, "r--", label="Ensemble")
-    plt.plot(tablex,tabley2, "b:o", label="Deep")
-    plt.legend()
-    plt.xlabel("Ammount of Data")
-    plt.ylabel("A.U.C")
-    plt.title("Evaluation")
-    plt.grid(True)
-    plt.draw()        
-    print("Extraction commencé")
-
-    isClean = False
-    varName = "graph.png"
-    add = 0
-    while isClean != True :
-        if not os.path.isfile(varName) :
-            plt.savefig(f'{varName}', dpi=200)
-            isClean = True
-        else :
-            split = varName.split(".")
-            part_1 = split[0]+"_"+str(add)
-            varName = ".".join([part_1,split[1]])
-            add +=1  
-
-        
-def summuary() : 
-
-    model = api.get_ensemble("ensemble/5db6e9abe47684746800c3c6")
-    importances = model['object']['importance']
-
-    importances_named = dict()
-    for column, importance in importances.items():
-        column_name = model['object']['ensemble']['fields'][column]['name']
-        importances_named[column_name] = [importance * 100]
-    df = pandas.DataFrame.from_dict(importances_named, orient='index')
-    df = df.sort_values(0, ascending=False)
-    df.plot(kind='bar', color='green', legend=False)
-    plt.draw()
-    plt.show()
 
 ########### Gestion du script #####################
 
