@@ -1,4 +1,7 @@
 from pandas import read_csv
+import pandas
+import os
+import matplotlib.pyplot as plt
 import argparse
 import sys
 from bigml.api import BigML
@@ -15,6 +18,8 @@ affichage = """
 
 \t1: Créer nouveau dataset            \t2: Charger un dataset
 
+                        \t3 code libre
+
     """
 
 option_choisie = 0
@@ -29,8 +34,9 @@ if option_choisie == 1:
     splitTest = float(input("valeur split test : "))
 
 elif option_choisie == 2:
-
     createSet = False
+
+
 
 
 mod = str(input("Model selectioné : "))
@@ -92,13 +98,14 @@ def predmeth1(file,splitTrain,splitTest,mod,objectifField,export) :
     elif mod == 'linear': 
         modvar = api.create_linear_regression(file, {"objective_field": f'{objectifField}',"name": "linear training"})      
     else :
-        print("mod non pris en charge")
+        print("mod non pris en charge ! programme terminé !!")
+        
         
     batch_prediction = api.create_batch_prediction(modvar, fileTest,{"all_fields": True,"probabilities": True})
 
     evaluation = api.create_evaluation(modvar,fileTest)
     
-    api.ok(evaluation) ## ?? 
+    api.ok(evaluation)  
     # api.pprint(evaluation['object']['result'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['accuracy'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['average_area_under_roc_curve'])
@@ -110,7 +117,7 @@ def predmeth1(file,splitTrain,splitTest,mod,objectifField,export) :
 
     print("prediction ok")
 
-################ Prediction sur fichier test(ok pour Kaggle mais n'envoie pas le fichier) ###################
+################ Prediction sur fichier test ###################
 
 def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
@@ -142,10 +149,106 @@ def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
     print("prediction ok")
     
+################ Code libre #######################
+
+def codelibre():
+
+    var = 0.1
+
+    tablex = []
+    tabley = []
+
+    for i in range(0,10):
+        print("Step : ",i)
+        origin_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
+        train_dataset = api.create_dataset(origin_dataset, {"name": "AmountData", "sample_rate": var})
+        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "test_auc_curve"})
+
+        fileTest = api.get_dataset("dataset/5db6c8e47811dd0557001103")
+
+        evaluation = api.create_evaluation(modvar,fileTest)
+        api.ok(evaluation)
+        auc = evaluation['object']['result']['model']['average_area_under_roc_curve']
+        print("auc : ", auc, "avec un split : ", var)
+
+        tablex.append(var)
+        tabley.append(auc)
+
+        var += 0.1
+        var = round(var,2)
+
+    print("first step done !!")
+
+    var = 0.1
+    tabley2 = []
+
+    for i in range(0,10):  
+        print("Step : ",i)
+
+        origin_dataset = api.get_dataset("dataset/5db6c8e3e47684746800c2e6")
+        train_dataset = api.create_dataset(origin_dataset, {"name": "AmountData", "sample_rate": var})
+        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "test_auc_curve"})
+
+        fileTest = api.get_dataset("dataset/5db6c8e47811dd0557001103")
+
+        evaluation = api.create_evaluation(modvar,fileTest)
+        api.ok(evaluation)
+        auc = evaluation['object']['result']['model']['average_area_under_roc_curve']
+        print("auc : ", auc, "avec un split : ", var)
+
+        tabley2.append(auc)
+
+        var += 0.1
+        var = round(var,2)    
+
+    print("Sec step done !!")
+
+    plt.plot(tablex,tabley, "r--", label="Ensemble")
+    plt.plot(tablex,tabley2, "b:o", label="Deep")
+    plt.legend()
+    plt.xlabel("Ammount of Data")
+    plt.ylabel("A.U.C")
+    plt.title("Evaluation")
+    plt.grid(True)
+    plt.draw()        
+    print("Extraction commencé")
+
+    isClean = False
+    varName = "graph.png"
+    add = 0
+    while isClean != True :
+        if not os.path.isfile(varName) :
+            plt.savefig(f'{varName}', dpi=200)
+            isClean = True
+        else :
+            split = varName.split(".")
+            part_1 = split[0]+"_"+str(add)
+            varName = ".".join([part_1,split[1]])
+            add +=1  
+
+        
+def summuary() : 
+
+    model = api.get_ensemble("ensemble/5db6e9abe47684746800c3c6")
+    importances = model['object']['importance']
+
+    importances_named = dict()
+    for column, importance in importances.items():
+        column_name = model['object']['ensemble']['fields'][column]['name']
+        importances_named[column_name] = [importance * 100]
+    df = pandas.DataFrame.from_dict(importances_named, orient='index')
+    df = df.sort_values(0, ascending=False)
+    df.plot(kind='bar', color='green', legend=False)
+    plt.draw()
+    plt.show()
+
 ########### Gestion du script #####################
 
 def voidUpdate():
 
+    if option_choisie == 3:
+        codelibre()
+        return
     if  batchForKaggle == False :
         predmeth1(file,splitTrain,splitTest,mod,objectifField,export)
     else :

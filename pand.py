@@ -1,11 +1,12 @@
 import sys
+import os
 import argparse
 import csv
 from pandas import read_csv
 import pandas
 import numpy as np
 import matplotlib.pyplot as plt
-
+from graph import rViz
 
 parser = argparse.ArgumentParser(description="Process analyse pred")
 
@@ -43,11 +44,17 @@ parser_auc = subparsers.add_parser("auc")
 parser_auc.add_argument('--file')
 parser_auc.add_argument('--extract')
 
+parser_libre = subparsers.add_parser("libre")
+parser_libre.add_argument('--file')
+parser_libre.add_argument('--extract')
+
 args = parser.parse_args() 
 print(args)
 
-
+                
 df = read_csv(f'{args.file}')
+
+########## Fonction simple ############################
 
 def addition():
     if args.signeope == '+' :
@@ -58,6 +65,9 @@ def addition():
         df[f'{args.newcol}'] = df[f'{args.col1}'] * df[f'{args.col2}']
     elif args.signeope =='div':
         df[f'{args.newcol}'] = df[f'{args.col1}'] / df[f'{args.col2}']
+
+def codelibre():
+    print("NONE")
 
 ########## Fonction pour regréssion context #############
 
@@ -90,7 +100,7 @@ def matrice(row):
     if args.Action == "seuil" :
         colpred = 'seuil_pred'
     elif args.Action == "matrix":
-        colpred =args.colpred
+        colpred = args.colpred
 
     if row[f'{args.colactu}'] == row[f'{colpred}'] and row[f'{args.colactu}'] == 0 :
         val = "TN"
@@ -133,7 +143,22 @@ def auc():
     print(f"La valeur de l'AUC est {auc}") 
     return auc 
 
-   
+    # ln1=df_val['target'].sum(axis =0)
+    # df1 = df_val['1 probability'] * df_val['target']
+
+    # df0 = df_val['target'] + 1
+    # df0 = df0.apply(lambda x: 0 if x == 2 else 1)
+    # ln2=df0.sum(axis =0)
+    # df0 = df_val['1 probability'] * df0
+
+    # nb1=0
+    # for r1 in df1:
+    #     if r1 > 0:
+    #         for r2 in df0:
+    #             if r1 > r2 and r2!=0:
+    #                 nb1 = nb1 + 1
+    # print("AUC= ", nb1/(ln1*ln2))
+ 
 def matrix(colpred):
 
     df[f'{colpred}'] = df[f'{colpred}'].map({1:2, 0:0})
@@ -178,22 +203,26 @@ def seuil():
     countSeuil = 0
     bestResult = 0
     newResult = 0
-    varSeuil = 0.26
+    varSeuil = 0.0
     optiSeuil = 0.1
 
- 
     coutTP = float(input("saisir cout TP :"))
     coutFN = float(input("saisir cout FN :"))
     coutTN = float(input("saisir cout TN :"))
     coutFP = float(input("saisir cout FP :"))
     modGraph = bool(input("Voulez vous un graphique du seuil ?"))
     print(modGraph)
+
+    inpSeuilMini = float(input("saisir le seuil de depart : "))
+    inpSeuilMax = float(input("saisir le seuil de fin : "))
+    inpSeuilParse = float(input("saisir le seuil d'analyse 0.1 ou 0.05 ou ... : "))
+    varSeuil = inpSeuilMini
     
     if modGraph :
         tablx = []
         tably = []
 
-    while countSeuil <= 10:
+    while varSeuil <= inpSeuilMax:
         print("count : ",countSeuil)
         varSeuil =round(varSeuil,2)
         print("valeur seuil : ",varSeuil)
@@ -223,7 +252,7 @@ def seuil():
             print(f"Nouveau meilleur résultat de {bestResult}, avec un seuil opti de {optiSeuil}")
 
         countSeuil+=1    
-        varSeuil += 0.01
+        varSeuil += inpSeuilParse
         print("pass")
 
     print("finally") 
@@ -248,28 +277,35 @@ def seuil():
     if modGraph :
         graph_simple(tablx,tably,'Threshold evaluation','graphSeuilOpti')
 
-
 ############# Graphique ##########################
 
 def graph_simple(x,y,titre,name):
+    plt.grid(True)
     plt.plot(x,y)
     plt.title(f"{titre}")
     plt.draw()
-    plt.savefig(f'{name}.png', dpi=200) 
-
-
-def graph_double(x,y,y2,titre,name):
-    plt.plot(x, y, "r--", label="Ensemble")
-    plt.plot(x, y2, "b:o", label="Deep")
-    plt.title(f"{titre}")
-    plt.draw()
-    plt.savefig(f'{name}.png', dpi=200)                
-
+    plt.savefig(f'{name}.png', dpi=200)
+    plt.show() 
+             
 ################## Gestion du script ##############################                  
 
 def extraction() :
     print("Extraction commencé")
-    df.to_csv(f'{args.extract}', index=False)
+
+    isClean = False
+    varName = args.extract
+    add = 0
+
+    while isClean != True :
+        if not os.path.isfile(varName) :
+            df.to_csv(f'{varName}', index=False)
+            isClean = True
+        else :
+            split = varName.split(".")
+            part_1 = split[0]+"_"+str(add)
+            varName = ".".join([part_1,split[1]])
+            add +=1  
+    
     print("Extraction terminé")
 
 def voidUpdate() :
@@ -294,13 +330,11 @@ def voidUpdate() :
         matcout(coutTP,coutFN,coutTN,coutFP)
 
     elif args.Action == 'seuil' :
-
         seuil() 
     elif  args.Action == 'auc':
         auc()
 
     if args.extract:
-
         extraction()
 
 
@@ -309,9 +343,9 @@ def voidUpdate() :
 
             ---Classification---                     ---Regression---       
 
-    \t1: Appliquer erreur majeur            \t2: Appliquer positive negatif analyse
+     \t1: Appliquer erreur majeur            \t2: Appliquer positive negatif analyse
 
-
+                            \t0: Fonction libre
                             \t3: Afficher l'opération
                             \t4: Extraire la sélection en mémoire
                             \t5: Terminer
@@ -341,7 +375,9 @@ def voidUpdate() :
                 extraction()  
                 args.extract = None
             except : 
-                print("Extraction Impossible")       
+                print("Extraction Impossible")
+        elif option_choisie == 0:
+            codelibre()                
                   
 voidUpdate()
 

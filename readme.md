@@ -1,12 +1,3 @@
-Rapport : Rapport_Ensemble_Deep2.pdf
-Meilleur résultat avec seuil 0.31
-gain : 10 163 000
---+ 319 000
-
-Rapport : ensemble sans seuil opti
-résultat : 9 844 000
-
-
 Analyse générée avec le script pand.py
 
 Pour générer une analyse =
@@ -23,5 +14,11 @@ D'autres options sont disponibles dans le script pour les cas de regréssion par
 Ce script est automatisé pour tout fichier.csv, je génére la colonne target qui est l'output à prédire, cette colonne est nomée depuis mon script bigml, idem pour la colonne prédiction qui s'appelera toujours pred. 
 
 Ensuite je ne change pas le nom des collones proba, de cette façon le script restera automatisé pour tout mes projets.
+
+
+Analyse AUC/Ammont of data
+
+placé le script bigzer.py et graph.py dans votre dossier de travail et exécuté le script bigzer, preparé les id des datasets à analysé.
+Un graphique sera affiché et crée en local au format .png
 
  
