@@ -21,13 +21,13 @@ def graph_simple(x,y,titre,name):
              
 ################## Gestion du script ##############################  
 
-def matrice(row):
+def matrice(row,output,pred):
 
-    if row["target"] == row["pred"] and row["target"] == 0 :
+    if row[f"{output}"] == row[f"{pred}"] and row[f"{output}"] == 0 :
         val = "TN"
-    elif row["target"] == row["pred"] and row["target"] == 1 :
+    elif row[f"{output}"] == row[f"{pred}"] and row[f"{output}"] == 1 :
         val = "TP"
-    elif row["target"] > row["pred"]:
+    elif row[f"{output}"] > row[f"{pred}"]:
         val = "FN"
     else:
         val = "FP"   
@@ -104,9 +104,13 @@ class regression():
 class classification():
  
     @staticmethod
-    def topErr(importfile,coloutput,colpred,context):
+    def topErr(importfile):
         df = importfile
-        filtered = df.loc[df['Error'].isin(["FN","FP"])]
+        try :
+            filtered = df.loc[df['Error'].isin(["FN","FP"])]
+        except :
+            print("Erreur, la colonne 'Error' est surement absente du DataFrame")
+            return
         print("Extraction commencé")
         filemane = str(input("Nom du fichier avec extention :"))
         print("Extraction commencé")
@@ -157,7 +161,7 @@ class classification():
     @staticmethod    
     def matrix(importfile,coloutput,colpred):
         df = importfile
-        df['Error'] =df.apply(matrice,axis=1)
+        df['Error'] =df.apply(matrice,axis=1,args=(coloutput,colpred))
         df[f'{colpred}'] = df[f'{colpred}'].map({1:2, 0:0})
         mat = df[f'{colpred}'] - df[f'{coloutput}']
 
@@ -206,7 +210,6 @@ class seuilOptimal() :
     def seuil(importfile):
         df = importfile
         me = classification()
-        df['Error'] =df.apply(matrice,axis=1)
         coloutput = str(input("nom colonne output : "))
         countSeuil = 0
         bestResult = 0
@@ -277,7 +280,7 @@ class seuilOptimal() :
         me.matrix(df,coloutput,colpred)
         me.matcout(df,coutTP,coutFN,coutTN,coutFP)
         df.loc[0,"seuil_opti"] = optiSeuil
-        df['Error'] =df.apply(matrice,axis=1)
+        df['Error']=df.apply(matrice,axis=1,args=(coloutput,colpred))
         
         print(f"Matrice de couts généré, resultat = {df.loc[0,'resultat']}")
         print(f"Le meilleur résultat est de {bestResult}, avec un seuil opti de {optiSeuil}")    

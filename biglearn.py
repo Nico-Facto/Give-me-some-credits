@@ -6,12 +6,12 @@ import os
 import matplotlib.pyplot as plt
 import sys
 from bigml.api import BigML
-from graph import rViz ###### importer le script graph.py #########
-
+from graph import rViz
+from Facto import secureLog as SL
 
 def initproject():
     pr = str(input("project/id : "))
-    api = BigML('NICOFACTO', 'f1c450758df16e375da99c36e7094fb901644232', project=f'{pr}')
+    api = BigML(f'{SL.bigUseur}', f'{SL.bigApiKey}', project=f'{pr}')
     return api
 api = initproject()
 
@@ -53,10 +53,14 @@ def predmeth1(file,fileTest,splitTrain,splitTest,mod,objectifField,export) :
 def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
     source_test = api.create_source(fileTest)
+    api.ok
     source = api.create_source(file)
+    api.ok
 
     origin_dataset = api.create_dataset(source)
+    api.ok
     test_testdataset = api.create_dataset(source_test)
+    api.ok
 
     print("fichier ok")
 
@@ -125,9 +129,13 @@ class createNewPred() :
         export = str(input("Nom du fichier exporté : "))
 
         source = api.create_source(f"{file}")
+        api.ok
         origin_dataset = api.create_dataset(source)
+        api.ok
         train_dataset = api.create_dataset(origin_dataset, {"name": "VarTraining", "sample_rate": splitTrain})
+        api.ok
         test_dataset = api.create_dataset(origin_dataset, {"name": "VarTest", "sample_rate": splitTest})
+        api.ok
         file = train_dataset
         fileTest = test_dataset
         print("split ok")
@@ -193,7 +201,7 @@ class analyserML() :
         ###### Routine Big ML #########
         for i in range(0,10):
             print("Step : ",i)
-
+        
             origin_dataset = api.get_dataset(f"{load_set_train}")
             api.ok
             train_dataset = api.create_dataset(origin_dataset, {"name": "AmountData2", "sample_rate": var})
