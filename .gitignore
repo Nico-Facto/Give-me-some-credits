@@ -1,0 +1,11 @@
+Rapport/
+.ipynb_checkpoints/
+__pycache__/
+Pred_Files/
+Rapport/
+Base_Files/
+docker/
+*.csv
+*.env
+*.pyc
+Facto.py
