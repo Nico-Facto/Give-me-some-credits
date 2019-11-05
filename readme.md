@@ -17,6 +17,6 @@ Ex:
 Maj 05/11 :
     -Optimisation du calcul du seuil opti (30 min à 30sec)
     -Amelioration du systéme d'extraction de document, ils seront placés dans les dossiers
-     automatiquement pour favorisé l'organisation du travail
+     automatiquement pour favoriser l'organisation du travail
 
  
