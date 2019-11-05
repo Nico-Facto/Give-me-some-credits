@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 from bigml.api import BigML
 from graph import rViz
-from Facto import secureLog as SL
+from sec import secureLog as SL
 
 def initproject():
     pr = str(input("project/id : "))
@@ -133,7 +133,6 @@ class createNewPred() :
         origin_dataset = api.create_dataset(source)
         api.ok
         train_dataset = api.create_dataset(origin_dataset, {"name": "VarTraining", "sample_rate": splitTrain})
-        api.ok
         test_dataset = api.create_dataset(origin_dataset, {"name": "VarTest", "sample_rate": splitTest})
         api.ok
         file = train_dataset
@@ -209,6 +208,7 @@ class analyserML() :
             fileTest = api.get_dataset(f"{load_set_test}")
             api.ok
 
+            ###### Appel de la fonction create_"" #########
             modvar = modelOperate(model_One,train_dataset)
 
             evaluation = api.create_evaluation(modvar,fileTest)

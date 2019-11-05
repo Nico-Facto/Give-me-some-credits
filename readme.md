@@ -14,10 +14,10 @@ Ex:
     output = 'target'
     pred = 'pred'
 
-
-Concernant l'optimisation, la méthode de calcul de seuil opti ne l'est pas :) compter 30 min pour 30 000 lignes ...  
-Je sais ou ca coince, si vous avez une solution :)  sachant qu'il faut prendre en compte la structure ouverte des class comme
-contrainte.
+Maj 05/11 :
+    -Optimisation du calcul du seuil opti (30 min à 30sec)
+    -Amelioration du systéme d'extraction de document, ils seront placés dans les dossiers
+     automatiquement pour favorisé l'organisation du travail
 
 Si vous êtez utilisateur des scripts, merci de me reporter tout bug, suggestion, amelioraiton, optimisation que vous pouvez y apporter !!
 

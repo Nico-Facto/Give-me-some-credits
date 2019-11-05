@@ -16,7 +16,7 @@ def graph_simple(x,y,titre,name):
     plt.plot(x,y,"r:o")
     plt.title(f"{titre}")
     plt.draw()
-    plt.savefig(f'{name}.png', dpi=200)
+    plt.savefig(f"Rapport/{name}.png", dpi=200)
     plt.show() 
              
 ################## Gestion du script ##############################  
@@ -229,22 +229,27 @@ class seuilOptimal() :
         inpSeuilParse = float(input("saisir le seuil d'analyse 0.1 ou 0.05 ou ... : "))
         varSeuil = inpSeuilMini
         
+        
+        
         if modGraph :
             tablx = []
             tably = []
 
         while varSeuil <= inpSeuilMax:
+            print("")
             print("count : ",countSeuil)
             varSeuil =round(varSeuil,2)
             print("valeur seuil : ",varSeuil)
-            countline = 0
+        
+            s_0 = []
             for i in df['1 probability'] :
                 if i < varSeuil :
-                    df.loc[countline,'seuil_pred'] = 0
+                    s_0.append(0) #df.loc[countline,'seuil_pred'] = 0
                 else:
-                    df.loc[countline,'seuil_pred']= 1
-                countline +=1    
+                    s_0.append(1) #df.loc[countline,'seuil_pred']= 1
+        
 
+            df['seuil_pred'] = s_0
             colpred = 'seuil_pred'
             me.matrix(df,coloutput,colpred)
             newResult = me.matcout(df,coutTP,coutFN,coutTN,coutFP)
@@ -268,14 +273,14 @@ class seuilOptimal() :
 
         print("finally") 
 
-        countline = 0
+        s_0 = []
         for i in df['1 probability'] :
             if i < optiSeuil :
-                df.loc[countline,'seuil_pred'] = 0
-            else: 
-                df.loc[countline,'seuil_pred']= 1
-            countline +=1     
+                s_0.append(0) #df.loc[countline,'seuil_pred'] = 0
+            else:
+                s_0.append(1) #df.loc[countline,'seuil_pred']= 1     
         
+        df['seuil_pred'] = s_0
         colpred = 'seuil_pred'
         me.matrix(df,coloutput,colpred)
         me.matcout(df,coutTP,coutFN,coutTN,coutFP)
@@ -303,7 +308,7 @@ class save():
 
         while isClean != True :
             if not os.path.isfile(varName) :
-                df.to_csv(f'{varName}', index=False)
+                df.to_csv(f"Rapport/{varName}", index=False)
                 isClean = True
             else :
                 split = varName.split(".")

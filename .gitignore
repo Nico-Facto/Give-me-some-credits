@@ -9,3 +9,4 @@ docker/
 *.env
 *.pyc
 Facto.py
+sec.py
