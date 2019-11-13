@@ -93,11 +93,30 @@ class regression():
                 erreurneg +=1
             else :  
                 predparfaite +=1
-        print(f'On a {erreurpos} erreur positive, {erreurneg} erreur negative, {predparfaite} prediction parfaite')
+        print(f'On a {erreurpos} erreurs positive, {erreurneg} erreurs negative, {predparfaite} prediction parfaite')
         df.loc[0,'positive erreur'] = erreurpos
         df.loc[0,'negatif erreur'] = erreurneg
         df.loc[0,'prediction parfaite'] = predparfaite 
         return df       
+
+    @staticmethod
+    def seuil_vs_error(importfile):
+        df = importfile
+        seuil = float(input("valeur du seuil :"))
+
+        count_error_min = 0
+        count_error_maj = 0
+        for i in df["errorabs"]:
+            if i < seuil :
+                count_error_min +=1
+            else :
+                count_error_maj +=1
+
+        print(f"il y'a {count_error_min} erreurs inférieurs àa {seuil}, il y'a {count_error_maj} erreurs supérieurs à {seuil}")
+        p_sous_seuil = (count_error_min*100)/(count_error_min+count_error_maj) 
+        p_sous_seuil = round(p_sous_seuil,4)
+        print(f"erreur sous seuil = {p_sous_seuil}%")
+        return p_sous_seuil
 
 ########## Class classification context #############  
 
@@ -228,8 +247,6 @@ class seuilOptimal() :
         inpSeuilMax = float(input("saisir le seuil de fin : "))
         inpSeuilParse = float(input("saisir le seuil d'analyse 0.1 ou 0.05 ou ... : "))
         varSeuil = inpSeuilMini
-        
-        
         
         if modGraph :
             tablx = []
