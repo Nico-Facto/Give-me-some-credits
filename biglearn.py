@@ -10,8 +10,7 @@ from graph import rViz
 from sec import secureLog as SL
 
 def initproject():
-    pr = str(input("project/id : "))
-    api = BigML(f'{SL.bigUseur}', f'{SL.bigApiKey}', project=f'{pr}')
+    api = BigML(f'{SL.bigUseur}', f'{SL.bigApiKey}', project=f'{SL.pjt_id}')
     return api
 api = initproject()
 
@@ -19,41 +18,29 @@ api = initproject()
 
 def predmeth1(file,fileTest,splitTrain,splitTest,mod,objectifField,export) :
 
-
-    if mod == 'ensemble':
-        modvar = api.create_ensemble(file, {"objective_field": f'{objectifField}',"name": "Ensemble training"})  
-    elif mod == 'model':
-        modvar = api.create_model(file, {"objective_field": f'{objectifField}',"name": "model training"})
-    elif mod == 'deepnet': 
-        modvar = api.create_deepnet(file, {"objective_field": f'{objectifField}',"name": "deepnet training"}) 
-    elif mod == 'linear': 
-        modvar = api.create_linear_regression(file, {"objective_field": f'{objectifField}',"name": "linear training"})      
-    else :
-        print("mod non pris en charge ! programme terminé !!")
+    modvar = modelOperate(mod,file)
         
-        
+    print("predict-lancée")    
     batch_prediction = api.create_batch_prediction(modvar, fileTest,{"all_fields": True,"probabilities": True})
+    api.ok(batch_prediction)
 
-    evaluation = api.create_evaluation(modvar,fileTest)
-    
+    evaluation = api.create_evaluation(modvar,fileTest) 
     api.ok(evaluation)  
     # api.pprint(evaluation['object']['result'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['accuracy'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['average_area_under_roc_curve'])
   
-    print("predict-lancée")
-
-    api.ok(batch_prediction)
     api.download_batch_prediction(batch_prediction,filename=f"Pred_Files/{export}")
 
     print("prediction ok")
 
-################ Prediction sur fichier test ###################
+################ Prediction sur fichier prod ###################
 
 def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
     source_test = api.create_source(fileTest)
     api.ok
+
     source = api.create_source(file)
     api.ok
 
@@ -64,22 +51,15 @@ def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
     print("fichier ok")
 
-    if mod == 'ensemble' :
-        modvar = api.create_ensemble(origin_dataset, {"objective_field": f'{objectifField}',"name": "Ensemble full training"})  
-    elif mod == 'model':
-        modvar = api.create_model(origin_dataset, {"objective_field": f'{objectifField}',"name": "model full training"})
-    elif mod == 'deepnet': 
-        modvar = api.create_deepnet(origin_dataset, {"objective_field": f'{objectifField}',"name": "deep full training"}) 
-    elif mod == 'linear': 
-        modvar = api.create_linear_regression(origin_dataset, {"objective_field": f'{objectifField}',"name": "linear training"})  
-    else :
-        print("mod non pris en charge")
-
-    batch_prediction = api.create_batch_prediction(modvar, test_testdataset,{"all_fields" : True,"probabilities" : True})
+    modvar = modelOperate(mod,origin_dataset)
 
     print("predict-lancée")
-
+    batch_prediction = api.create_batch_prediction(modvar, test_testdataset,{"all_fields" : True,"probabilities" : True})
     api.ok(batch_prediction)
+
+    # evaluation = api.create_evaluation(modvar,fileTest)
+    # api.ok(evaluation) 
+     
     api.download_batch_prediction(batch_prediction,filename=f"Pred_Files/{export}")
 
     print("prediction ok")
@@ -88,13 +68,13 @@ def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
 def modelOperate(mod,train_dataset) :
     if mod == 'ensemble':
-        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "test_auc_curve"}) 
+        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "ensemble"}) 
     elif mod == 'model':
-        modvar = api.create_model(train_dataset, {"objective_field": "target","name": "test_auc_curve"})
+        modvar = api.create_model(train_dataset, {"objective_field": "target","name": "model"})
     elif mod == 'deepnet': 
-        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "test_auc_curve"}) 
+        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "deepnet"}) 
     elif mod == 'linear': 
-        modvar = api.create_linear_regression(train_dataset, {"objective_field": "target","name": "test_auc_curve"})      
+        modvar = api.create_linear_regression(train_dataset, {"objective_field": "target","name": "linear"})      
     else :
         print("mod non pris en charge ! programme terminé !!")
         exit()
@@ -144,28 +124,50 @@ class createNewPred() :
     @staticmethod
     def loaddDataSet() :
 
-        n_dataset = str(input("train dataset/id : "))
-        train_dataset = api.get_dataset(f"{n_dataset}")
-        t_dataset = str(input("test dataset/id : "))
-        test_dataset = api.get_dataset(f"{t_dataset}")
+        c_condition = bool(input("Appliquer nouveau split (true or false) ?"))
 
-        mod = str(input("Model selectioné : "))
-        objectifField = str(input("Nom du champs objectif : "))
-        export = str(input("Nom du fichier exporté : "))
-
-        file = train_dataset
-        fileTest = test_dataset
-        splitTrain = 0
-        splitTest = 0
-        print("dataset load ok") 
+        if c_condition :
+            s_source = str(input("train full dataset/id : "))
+            n_source = api.get_dataset(f"{s_source}")
+            splitTrain = float(input("valeur split train : "))
+            splitTest = float(input("valeur split test : "))
+            train_dataset = api.create_dataset(n_source, {"name": "VarTraining", "sample_rate": splitTrain})
+            test_dataset = api.create_dataset(n_source, {"name": "VarTest", "sample_rate": splitTest})
+            mod = str(input("Model selectioné : "))
+            objectifField = str(input("Nom du champs objectif : "))
+            export = str(input("Nom du fichier exporté : "))
+            file = train_dataset
+            fileTest = test_dataset
+            print("dataset load ok") 
+        else :    
+            n_dataset = str(input("train dataset/id : "))
+            train_dataset = api.get_dataset(f"{n_dataset}")
+            t_dataset = str(input("test dataset/id : "))
+            test_dataset = api.get_dataset(f"{t_dataset}")
+            mod = str(input("Model selectioné : "))
+            objectifField = str(input("Nom du champs objectif : "))
+            export = str(input("Nom du fichier exporté : "))
+            file = train_dataset
+            fileTest = test_dataset
+            splitTrain = 0
+            splitTest = 0
+            print("dataset load ok") 
 
         predmeth1(file,fileTest,splitTrain,splitTest,mod,objectifField,export)
 
     @staticmethod
     def predOnProdSet() :
         
-        file = str(input("Nom du fichier full train : "))
-        fileTest = str(input("Nom du fichier full Prod : "))
+        c_condition = bool(input("Creer une nouvelle source full train (true or false) ?"))
+
+        if c_condition:
+            file = str(input("Nom du fichier full train : "))
+            fileTest = str(input("Nom du fichier full Prod : "))
+        else:    
+            s_source = str(input("train full dataset/id : "))
+            file = api.get_dataset(f"{s_source}")
+            fileTest = str(input("Nom du fichier full Prod : "))
+
         mod = str(input("Model selectioné : "))
         objectifField = str(input("Nom du champs objectif : "))
         export = str(input("Nom du fichier exporté : "))

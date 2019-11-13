@@ -112,7 +112,7 @@ class regression():
             else :
                 count_error_maj +=1
 
-        print(f"il y'a {count_error_min} erreurs inférieurs àa {seuil}, il y'a {count_error_maj} erreurs supérieurs à {seuil}")
+        print(f"il y'a {count_error_min} erreurs inférieurs à {seuil}, il y'a {count_error_maj} erreurs supérieurs à {seuil}")
         p_sous_seuil = (count_error_min*100)/(count_error_min+count_error_maj) 
         p_sous_seuil = round(p_sous_seuil,4)
         print(f"erreur sous seuil = {p_sous_seuil}%")
