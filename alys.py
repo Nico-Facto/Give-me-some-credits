@@ -77,6 +77,12 @@ class regression():
         df['errorabs'] = round(abs(df['pourcerror']), 2)
         df.loc[0,'mape'] = round(np.average(df['errorabs'])*100, 2)
         print("MAPE = ",df.loc[0,'mape'])
+
+        differences = df[f'{colpred}'] - df[f'{colactu}']                       
+        differences_squared = differences ** 2                    
+        mean_of_differences_squared = differences_squared.mean()  
+        df.loc[0,'RMSE'] = np.sqrt(mean_of_differences_squared)
+
         return df
 
     @staticmethod

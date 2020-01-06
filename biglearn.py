@@ -6,6 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import sys
 from bigml.api import BigML
+from bigml.model import Model
 from graph import rViz
 from sec import secureLog as SL
 
@@ -18,10 +19,11 @@ api = initproject()
 
 def predmeth1(file,fileTest,splitTrain,splitTest,mod,objectifField,export) :
 
-    modvar = modelOperate(mod,file)
-        
+    modvar = modelOperate(mod,file) 
+    api.ok(modvar)
     print("predict-lancée")    
-    batch_prediction = api.create_batch_prediction(modvar, fileTest,{"all_fields": True,"probabilities": True})
+
+    batch_prediction = api.create_batch_prediction(modvar, fileTest,{"all_fields": True,"probabilities": True, "prediction_name" : "pred"})
     api.ok(batch_prediction)
 
     evaluation = api.create_evaluation(modvar,fileTest) 
@@ -29,37 +31,32 @@ def predmeth1(file,fileTest,splitTrain,splitTest,mod,objectifField,export) :
     # api.pprint(evaluation['object']['result'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['accuracy'])
     # api.pprint(evaluation['object']['result']['Ensemble training']['average_area_under_roc_curve'])
-  
+    
     api.download_batch_prediction(batch_prediction,filename=f"Pred_Files/{export}")
 
     print("prediction ok")
 
 ################ Prediction sur fichier prod ###################
 
-def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
+def predmeth1Kagg (modid,modTypes,fileTest,export) :
 
     source_test = api.create_source(fileTest)
     api.ok
 
-    source = api.create_source(file)
-    api.ok
-
-    origin_dataset = api.create_dataset(source)
-    api.ok
     test_testdataset = api.create_dataset(source_test)
     api.ok
 
     print("fichier ok")
 
-    modvar = modelOperate(mod,origin_dataset)
-
+    modvar = getModel(modid,modTypes)
+    api.ok(modvar)
     print("predict-lancée")
-    batch_prediction = api.create_batch_prediction(modvar, test_testdataset,{"all_fields" : True,"probabilities" : True})
+    
+    batch_prediction = api.create_batch_prediction(modvar, test_testdataset,{"all_fields" : True,"probabilities" : True, "prediction_name" : "pred"})
     api.ok(batch_prediction)
 
     # evaluation = api.create_evaluation(modvar,fileTest)
     # api.ok(evaluation) 
-     
     api.download_batch_prediction(batch_prediction,filename=f"Pred_Files/{export}")
 
     print("prediction ok")
@@ -68,13 +65,13 @@ def predmeth1Kagg (objectifField,mod,file,fileTest,export) :
 
 def modelOperate(mod,train_dataset) :
     if mod == 'ensemble':
-        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "ensemble"}) 
+        modvar = api.create_ensemble(train_dataset, {"objective_field": "target","name": "ensemble","prediction_name" : "pred"}) 
     elif mod == 'model':
-        modvar = api.create_model(train_dataset, {"objective_field": "target","name": "model"})
+        modvar = api.create_model(train_dataset, {"objective_field": "target","name": "model","prediction_name" : "pred"})
     elif mod == 'deepnet': 
-        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "deepnet"}) 
+        modvar = api.create_deepnet(train_dataset, {"objective_field": "target","name": "deepnet","prediction_name" : "pred"}) 
     elif mod == 'linear': 
-        modvar = api.create_linear_regression(train_dataset, {"objective_field": "target","name": "linear"})      
+        modvar = api.create_linear_regression(train_dataset, {"objective_field": "target","name": "linear","prediction_name" : "pred"})      
     else :
         print("mod non pris en charge ! programme terminé !!")
         exit()
@@ -157,22 +154,12 @@ class createNewPred() :
 
     @staticmethod
     def predOnProdSet() :
-        
-        c_condition = bool(input("Creer une nouvelle source full train (true or false) ?"))
-
-        if c_condition:
-            file = str(input("Nom du fichier full train : "))
-            fileTest = str(input("Nom du fichier full Prod : "))
-        else:    
-            s_source = str(input("train full dataset/id : "))
-            file = api.get_dataset(f"{s_source}")
-            fileTest = str(input("Nom du fichier full Prod : "))
-
-        mod = str(input("Model selectioné : "))
-        objectifField = str(input("Nom du champs objectif : "))
+        fileTest = str(input("Nom du fichier full Prod : "))
+        modid = str(input("Modèle id : "))
+        modTypes = str(input("Types de Modèle  : "))
         export = str(input("Nom du fichier exporté : "))
 
-        predmeth1Kagg(objectifField,mod,file,fileTest,export)
+        predmeth1Kagg(modid,modTypes,fileTest,export)
 
 ##################### Meth pour split les full test en dev test et test_test(genre kaggle) ##############################
 
@@ -254,5 +241,29 @@ class analyserML() :
         plt.draw()
         plt.show()
 
+class singlePredProd() :
 
-    
+    @staticmethod
+    def singlePred(model_id,model_types,array_imput):
+
+        mod = model_types
+        model = getModel(model_id,mod)
+        api.ok(model)
+
+        input_data = {"title": array_imput[0], "synopsis": array_imput[1], "rating": array_imput[2], "genre": array_imput[3], "duration": array_imput[4],
+        "release_date": array_imput[5], "director": array_imput[6],"people": array_imput[7], "produceur": array_imput[8],"country": array_imput[9], 
+        "writer": array_imput[10]}
+
+        prediction = api.create_prediction(model, input_data)
+
+        api.ok(prediction)
+        value_pred = prediction["object"]["output"]
+        return value_pred
+        #print("prediction : %s, confidence: %s %",(prediction["object"]["output"],prediction["object"]["confidence"] ))    
+
+    @staticmethod
+    def localSinglePred(model,vals1,vals2):
+
+        input_data2 = {"features1": vals1, "features2": vals2}
+        local_model = Model(model)# model Id
+        local_model.predict(input_data2) # add_confidence=True)
