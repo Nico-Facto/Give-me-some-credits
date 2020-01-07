@@ -1,15 +1,15 @@
-Placer les scripts .py dans votre dossier.
+Modéle en production : 
 
-Pour un résultat optimal, la colonne output et pred doivent être nomées :
+    Exécuté le NoteBook Production IA
+    Set your source file
+    For reproduce the Kaggle score donwload the file test cs-test.csv and place it on the root of folder :
+    https://www.kaggle.com/c/GiveMeSomeCredit/data
 
-target, pred
-
-les autres colonnes générées par bigml ne doivent pas être modifiés (confidence, proba ect ect)
+    Change Any datas to make prediction you needs
 
 
-Maj 05/11 :
-    -Optimisation du calcul du seuil opti (30 min à 30sec)
-    -Amelioration du systéme d'extraction de document, ils seront placés dans les dossiers
-     automatiquement pour favoriser l'organisation du travail
+Travaux préparatoire : 
+
+    This all Notebooks and scripts use for build the Ia.
 
  
