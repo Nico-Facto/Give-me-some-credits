@@ -21,7 +21,6 @@ IA production :
 
     the columns probability of csv file give the probability for prediction = 1.
     
-
 Travaux préparatoire : 
 
     This all Notebooks and scripts use for build the Ia. Reproduce them was not recommanded, Bigml was use for some of predicions analyse,
