@@ -8,5 +8,7 @@ docker/
 *.csv
 *.env
 *.pyc
+*.ui
 Facto.py
 sec.py
+iaManager.py
